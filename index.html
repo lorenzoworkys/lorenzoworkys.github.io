@@ -26,6 +26,7 @@
       <a href="#appunti">Appunti</a>
       <a href="#progetti">Progetti</a>
       <a href="#chi">Chi sono</a>
+      <a href="visione.html">Visione</a>
     </nav>
     <button type="button" class="pill-btn theme-toggle" aria-label="Passa al tema chiaro">
       <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
@@ -62,8 +63,8 @@
     <div class="notes-list" id="notes-list"><p class="loading">Carico le note…</p></div>
     <aside class="aside" aria-label="Lavori in corso">
       <h3>Lavori in corso</h3>
-      <div class="work"><span class="state now">In corso</span><span>Machine learning, dalle fondamenta</span></div>
-      <div class="work"><span class="state">Prossimo</span><span>NeuralNet4, il cacciatore</span></div>
+      <div class="work"><span class="state now">In corso</span><span>NeuralNet4, parte 2: imparare per tentativi</span></div>
+      <div class="work"><span class="state">Allenamento continuo</span><span>Riscrivere il cacciatore da zero, più volte</span></div>
       <div class="work"><span class="state">Più avanti</span><span class="muted">Web development</span></div>
     </aside>
   </div>
@@ -201,15 +202,20 @@ for epoca in range(50):
     </div>
   </article>
 
-  <div class="project-row">
-    <span class="n">02</span>
-    <div>
-      <span class="title">NeuralNet4, il cacciatore</span>
+  <a class="cta-card" href="neuralnet4.html">
+    <div class="tile tile-coral cta-visual">
+      <span class="cv-label">neuralnet4_corretto.py</span>
       <div class="world" id="world" role="img" aria-label="Anteprima: un agente si muove verso il cibo in un mondo di venti caselle"></div>
+      <span class="cv-label">punti, passi, e un neurone che sceglie: destra o sinistra</span>
     </div>
-    <p>Il prossimo passo: un neurone con due ingressi impara a inseguire il cibo in un mondo di venti caselle, prima nel terminale, poi in una finestra grafica.</p>
-    <span class="badge soon">In arrivo</span>
-  </div>
+    <div class="cta-text">
+      <div class="meta"><span class="tag">02</span><span>ML</span><span>3 ottobre 2026</span><span class="badge live">Parte 1 completata · altri aggiornamenti in arrivo</span></div>
+      <h3>Il cacciatore</h3>
+      <p>Un neurone con due ingressi impara a inseguire il cibo in un mondo di venti caselle. Ho raccontato come l’ho costruito, come l’ho riscritto da solo e cosa ho capito, riga per riga.</p>
+      <div class="chips"><span class="chip">8 figure animate</span><span class="chip">allenamento dal vivo</span><span class="chip">12 minuti di lettura</span></div>
+      <span class="cta-go">Entra nel processo <span class="arrow" aria-hidden="true">→</span></span>
+    </div>
+  </a>
 
   <div class="project-row">
     <span class="n">03</span>
@@ -234,6 +240,7 @@ for epoca in range(50):
     <p>Quello che mi piace di più è scoprire cose inattese, quelle che spostano un po’ più in là il confine di ciò che è possibile.</p>
     <p class="muted">Credo nei fatti e nei dati, sapendo che potrei sempre sbagliarmi. Queste pagine servono anche a quello: a mostrare il ragionamento, non solo il risultato.</p>
     <p class="small-quote">“Lo scopo del calcolo è la comprensione, non i numeri.” <span>— Richard Hamming, 1962</span></p>
+    <a class="cta-go" href="visione.html">Leggi perché lo faccio <span class="arrow" aria-hidden="true">→</span></a>
   </div>
 </section>
 

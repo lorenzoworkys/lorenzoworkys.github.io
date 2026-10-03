@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="it" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Il cacciatore — NeuralNet4 · Lore</title>
+<meta name="description" content="Come ho costruito NeuralNet4: un neurone che impara a cacciare il cibo, con figure animate e un allenamento dal vivo.">
+<meta property="og:title" content="Il cacciatore — NeuralNet4">
+<meta property="og:description" content="Imparo come funzionano le macchine che imparano.">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('lab-theme')||'dark'}catch(e){document.documentElement.dataset.theme='dark'}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300..700;1,8..60,300..700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div class="page">
+<header class="masthead">
+  <a class="brand" href="index.html">Lore</a>
+  <div class="masthead-right">
+    <nav class="nav" aria-label="Navigazione"><a href="index.html#progetti">← Progetti</a><a href="index.html#note">Note</a></nav>
+    <button type="button" class="pill-btn theme-toggle" aria-label="Passa al tema chiaro">
+      <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
+      <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      <span class="label">Scuro</span>
+    </button>
+  </div>
+</header>
+
+<main class="longform">
+
+<section class="lf-hero">
+  <div class="meta"><span class="tag">ML</span><span>Progetto 02</span><span>3 ottobre 2026</span><span>12 minuti di lettura</span></div>
+  <h1>Il cacciatore</h1>
+  <p class="dek">Un solo neurone, due ingressi, venti caselle. Come ho costruito NeuralNet4, come l’ho riscritto da solo e cosa ho capito, riga per riga.</p>
+  <div class="status-cards">
+    <div class="status-card done"><span class="sc-label">Parte 1 · impara dagli esempi</span><span class="sc-value">Completata</span></div>
+    <div class="status-card now"><span class="sc-label">Parte 2 · impara per tentativi</span><span class="sc-value">In corso</span></div>
+    <div class="status-card"><span class="sc-label">Riscritture senza appunti</span><span class="sc-value">1, la prima di molte</span></div>
+  </div>
+</section>
+
+<figure class="figure lf-wide" id="fig-mondo">
+  <div class="tile tile-oat fig-tile">
+    <span class="fig-badge" aria-hidden="true">1</span>
+    <div class="world big" id="w-row" role="img" aria-label="Venti caselle: un agente si sposta verso il cibo"></div>
+    <div class="readouts">
+      <span>x₁ = agente / 20 = <b id="w-x1" class="num">—</b></span>
+      <span>x₂ = cibo / 20 = <b id="w-x2" class="num">—</b></span>
+      <span>σ(z) = <b id="w-p" class="num">—</b> → <b id="w-dir">—</b></span>
+    </div>
+  </div>
+  <figcaption class="caption"><b>Fig. 1</b> — Il mondo del cacciatore. L’agente (scuro) vede solo due numeri: la sua posizione e quella del cibo (terracotta), divise per la larghezza. A ogni passo un neurone già allenato decide: sopra 0,5 va a destra, sotto a sinistra.</figcaption>
+</figure>
+
+<nav class="toc" aria-label="Indice">
+  <span class="toc-title">Indice</span>
+  <ol>
+    <li><a href="#premessa">Prima di tutto: cosa so, e cosa no</a></li>
+    <li><a href="#obiettivo">L’obiettivo</a></li>
+    <li><a href="#strumenti">Gli strumenti</a></li>
+    <li><a href="#sigmoide">Pensare: la sigmoide</a></li>
+    <li><a href="#calcolo">Pensare: un calcolo a mano</a></li>
+    <li><a href="#pesi">Pesi, bias e quanti ingressi</a></li>
+    <li><a href="#impara">Imparare: una correzione</a></li>
+    <li><a href="#lr">Quanto forte correggere</a></li>
+    <li><a href="#allena">Esempi, voto, allenamento</a></li>
+    <li><a href="#terminale">Il cacciatore nel terminale</a></li>
+    <li><a href="#dasolo">La seconda volta, da solo</a></li>
+    <li><a href="#dopo">Cosa viene dopo</a></li>
+  </ol>
+</nav>
+
+<section id="premessa" class="prose">
+  <h2>Prima di tutto: cosa so, e cosa no</h2>
+  <p class="lead">Se sto scrivendo questa analisi è perché il codice l’ho già scritto due volte: la prima con la guida accanto, commentandolo riga per riga; la seconda da solo, senza niente davanti. Non significa che la pratica sia finita. Significa che ho raccolto abbastanza esperienza per spiegarlo.</p>
+  <p>Per ora ho lavorato solo sulla parte in cui il neurone impara da un dataset di esempi, generato dal programma stesso, e mi sono fermato al risultato nel terminale. La versione che impara per puro tentativo ed errore arriva dopo.</p>
+  <blockquote class="pull">Non mi definirò maestro di questo progetto finché non riuscirò a costruire con costanza, e senza difficoltà, IA di questo genere senza appunti a fianco.</blockquote>
+  <p>Quindi posso dire due cose, e nessuna di più: so costruirlo, ma con fatica; e lo capisco nella sua logica. Sulla matematica devo essere umile e definire la mia comprensione parziale. Verrà riparata.</p>
+</section>
+
+<section id="obiettivo" class="prose">
+  <h2>L’obiettivo</h2>
+  <p>Creare una piccola rete neurale che, partendo da zero, impari a orientarsi in uno spazio a una dimensione e a cacciare un punto preciso della mappa, scegliendo ogni volta la direzione giusta: destra o sinistra. Il tutto con un risultato riconoscibile a colpo d’occhio, anche se graficamente semplice, direttamente nel terminale.</p>
+  <p>Il nome viene da lì: come un cacciatore, l’agente si muove sempre verso la preda appena generata. Questo obiettivo è stato raggiunto, e con lui la prima parte del progetto.</p>
+</section>
+
+<section id="strumenti" class="prose">
+  <h2>Gli strumenti</h2>
+  <p>Quattro librerie, nessuna esterna, e ognuna ha un motivo preciso.</p>
+  <dl class="defs">
+    <div><dt>random</dt><dd>Nelle reti neurali il caso è ovunque: i pesi e il bias partono da valori casuali, e lo stesso vale per le posizioni di agente e cibo.</dd></div>
+    <div><dt>math</dt><dd>Serve per la sigmoide, che usa la funzione esponenziale.</dd></div>
+    <div><dt>time</dt><dd>Rallenta il gioco quel tanto che basta perché un occhio umano possa seguirlo.</dd></div>
+    <div><dt>os</dt><dd>Parla con il sistema operativo per pulire il terminale a ogni fotogramma.</dd></div>
+  </dl>
+  <p>Poi tre costanti, le manopole dell’esperimento: <code>larghezza = 20</code> è la dimensione della mappa; <code>lr = 0.5</code> è il learning rate, cioè quanto forte il peso viene corretto a ogni errore; <code>epoche = 200</code> è un altro modo per dire “volte”: quante volte il neurone ripassa l’intero dataset.</p>
+</section>
+
+<section id="sigmoide" class="prose">
+  <h2>Pensare: la sigmoide</h2>
+  <p>In NeuralNet3 la risposta era un numero qualsiasi: il doppio dell’ingresso. Qui no. Il cacciatore deve scegliere tra due cose, e un risultato come 47 non avrebbe senso. Serve un traduttore che prenda qualunque numero e lo trasformi in una certezza tra 0 e 1. Quel traduttore è la sigmoide: 1 / (1 + e<sup>−z</sup>).</p>
+  <p>Ho verificato a mano cosa fa, ed è il modo migliore per non sbagliare il segno. Con z = 0, e<sup>0</sup> = 1 e il risultato è 1/2: il neurone non ha idea di dove andare. Con z = 5, e<sup>−5</sup> ≈ 0,0067 e il risultato è 0,993: quasi certo della destra. Con z = −5, e<sup>5</sup> ≈ 148,4 e il risultato è 0,0067: quasi certo della sinistra.</p>
+</section>
+
+<figure class="figure lf-wide" id="fig-sigmoide">
+  <div class="tile tile-coral fig-tile">
+    <span class="fig-badge" aria-hidden="true">2</span>
+    <svg id="sig-svg" viewBox="0 0 560 270" role="img" aria-label="La curva sigmoide con un punto che la percorre lentamente">
+      <path d="M40 20 V240 H540" fill="none" stroke="#141413" stroke-width="2" stroke-linecap="round"/>
+      <path d="M40 140 H540" stroke="#141413" stroke-width="1" stroke-dasharray="4 6" opacity=".55"/>
+      <text x="46" y="134" font-family="Instrument Sans, system-ui, sans-serif" font-size="12" fill="#141413">0,5</text>
+      <text x="46" y="36" font-family="Instrument Sans, system-ui, sans-serif" font-size="12" fill="#141413">1</text>
+      <text x="470" y="160" font-family="Instrument Sans, system-ui, sans-serif" font-size="12" fill="#8A3A1F">destra ↑</text>
+      <text x="102" y="128" font-family="Instrument Sans, system-ui, sans-serif" font-size="12" fill="#8A3A1F">sinistra ↓</text>
+      <path id="sig-curve" class="draw" fill="none" stroke="#141413" stroke-width="3" stroke-linecap="round"/>
+      <circle id="sig-ma" r="5" fill="#141413"/><circle id="sig-mb" r="5" fill="#141413"/><circle id="sig-mc" r="5" fill="#141413"/>
+      <text x="360" y="32" font-family="Instrument Sans, system-ui, sans-serif" font-size="12" fill="#141413">z = 5 → 0,993</text>
+      <text x="124" y="226" font-family="Instrument Sans, system-ui, sans-serif" font-size="12" fill="#141413">z = −5 → 0,0067</text>
+      <text x="296" y="160" font-family="Instrument Sans, system-ui, sans-serif" font-size="12" fill="#141413">z = 0 → 0,5</text>
+      <path id="sig-drop" stroke="#141413" stroke-width="1.2" stroke-dasharray="3 5"/>
+      <circle id="sig-dot" r="10" fill="#FAF9F5" stroke="#141413" stroke-width="3"/>
+      <text x="530" y="260" text-anchor="end" font-family="Instrument Sans, system-ui, sans-serif" font-size="12" fill="#4D4C48">z →</text>
+    </svg>
+    <div class="readouts"><span>z = <b id="sig-z" class="num">—</b></span><span>σ(z) = <b id="sig-s" class="num">—</b></span><span>scelta: <b id="sig-dir">—</b></span></div>
+  </div>
+  <figcaption class="caption"><b>Fig. 2</b> — La sigmoide schiaccia qualunque z tra 0 e 1. Il punto la percorre avanti e indietro: lontano da zero la curva si appiattisce e la certezza diventa quasi totale. È la soglia 0,5 a trasformare la certezza in una scelta.</figcaption>
+</figure>
+
+<section class="prose">
+  <p>Una correzione che mi porto dietro dalla prima stesura: avevo scritto che la sigmoide sta tra −1 e 1. Quella è un’altra funzione, la tangente iperbolica. La sigmoide sta tra 0 e 1, ed è proprio per questo che si può leggere come una probabilità: se esce 0,647, il neurone crede che andare a destra sia giusto, ma non ne è sicuro. Un 1 pieno vorrebbe dire certezza assoluta.</p>
+</section>
+
+<section id="calcolo" class="prose">
+  <h2>Pensare: un calcolo a mano</h2>
+  <p>Il pensiero del neurone è il metodo <code>pensa</code>. In italiano dice: parti dal bias; poi, per ogni ingresso, aggiungi peso per ingresso; alla fine passa tutto alla sigmoide e restituisci il risultato. È la stessa somma di NeuralNet3, solo ripetuta per due ingressi.</p>
+</section>
+
+<div class="lf-wide code-pair">
+<pre class="code tile tile-oat"><code>def pensa(self, entrate):
+    z = self.bias
+    for i in range(len(self.pesi)):
+        z = z + self.pesi[i] * entrate[i]
+    return sigmoide(z)</code></pre>
+</div>
+
+<section class="prose">
+  <p>Per capirlo davvero l’ho eseguito a mano, con numeri inventati ma plausibili: pesi 0,3 e −0,2, bias 0,1, l’agente nella casella 5 e il cibo nella 15, quindi a destra.</p>
+</section>
+
+<figure class="figure lf-wide" id="fig-calcolo">
+  <div class="tile tile-oat fig-tile calc">
+    <span class="fig-badge" aria-hidden="true">3</span>
+    <svg viewBox="0 0 440 260" role="img" aria-label="Il neurone con i valori del calcolo: bias, due ingressi pesati, somma e sigmoide">
+      <g font-family="Instrument Sans, system-ui, sans-serif" font-size="13" fill="#141413">
+        <path id="ce-b" class="edge" d="M84 46 L214 112"/>
+        <path id="ce-1" class="edge" d="M84 130 L210 130"/>
+        <path id="ce-2" class="edge" d="M84 214 L214 148"/>
+        <path id="ce-o" class="edge" d="M290 130 L362 130"/>
+        <circle cx="60" cy="40" r="22" fill="#FAF9F5" stroke="#141413" stroke-width="2.5"/>
+        <g id="calc-in" class="calc-in">
+          <circle cx="60" cy="130" r="24" fill="#FAF9F5" stroke="#141413" stroke-width="2.5"/>
+          <circle cx="60" cy="220" r="24" fill="#FAF9F5" stroke="#141413" stroke-width="2.5"/>
+          <text x="60" y="135" text-anchor="middle">0,25</text>
+          <text x="60" y="225" text-anchor="middle">0,75</text>
+        </g>
+        <text x="60" y="45" text-anchor="middle">1</text>
+        <text x="60" y="166" text-anchor="middle" fill="#4D4C48">agente</text>
+        <text x="60" y="256" text-anchor="middle" fill="#4D4C48">cibo</text>
+        <text x="128" y="62">b = 0,1</text>
+        <text x="112" y="122">w₁ = 0,3</text>
+        <text x="112" y="200">w₂ = −0,2</text>
+        <circle cx="250" cy="130" r="40" fill="#D97757" stroke="#141413" stroke-width="2.5"/>
+        <text x="250" y="140" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-size="30">Σ</text>
+        <circle cx="392" cy="130" r="30" fill="#141413"/>
+        <text x="392" y="136" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-size="20" font-style="italic" fill="#FAF9F5">σ</text>
+      </g>
+    </svg>
+    <div class="calc-side">
+      <ol class="calc-rows" id="calc-rows">
+        <li>Pesi 0,3 e −0,2, bias 0,1. Agente nella casella 5, cibo nella 15.</li>
+        <li>Le entrate diventano piccole: 5/20 = 0,25 e 15/20 = 0,75.</li>
+        <li>Si parte dal bias: z = 0,1.</li>
+        <li>Primo ingresso: z = 0,1 + 0,3 · 0,25 = 0,175.</li>
+        <li>Secondo ingresso: z = 0,175 + (−0,2) · 0,75 = 0,025.</li>
+        <li>σ(0,025) = 0,50625. Appena sopra 0,5: destra, la direzione giusta, ma quasi a caso.</li>
+      </ol>
+      <div class="calc-out"><span>z = <b id="calc-z" class="num">—</b></span><span>uscita = <b id="calc-p" class="num">—</b></span></div>
+      <div class="calc-dots" id="calc-dots" role="group" aria-label="Passi del calcolo">
+        <button type="button" aria-label="Passo 1"></button><button type="button" aria-label="Passo 2"></button><button type="button" aria-label="Passo 3"></button><button type="button" aria-label="Passo 4"></button><button type="button" aria-label="Passo 5"></button><button type="button" aria-label="Passo 6"></button>
+      </div>
+    </div>
+  </div>
+  <figcaption class="caption"><b>Fig. 3</b> — Il mio calcolo a mano, un passo alla volta. Il neurone non ancora allenato sceglie la direzione giusta, ma con una certezza di appena 0,506: un lancio di moneta truccato di pochissimo. Puoi saltare a un passo cliccando i pallini.</figcaption>
+</figure>
+
+<section id="pesi" class="prose">
+  <h2>Pesi, bias e quanti ingressi</h2>
+  <p>Il pensiero vive dentro la classe <code>Neurone</code>, che è uno stampo per cervelli. Quando ne crei uno gli dici quanti ingressi avrà, e lui genera un peso casuale per ciascuno, più un bias.</p>
+  <p>I pesi sono le manopole che cambiano davvero: sono il cervello vero e proprio. Senza, l’agente sarebbe una macchina fissa, programmata per un unico scopo. Con i pesi, e con la possibilità di correggerli, può dare a ogni indizio esattamente il valore che merita. Il bias invece è la preferenza di partenza: quanto il neurone tende verso destra quando tutti gli ingressi valgono zero. Si somma come un peso il cui ingresso vale sempre 1. Qui conta poco: il mondo è perfettamente simmetrico, non ha una direzione preferita, e durante l’allenamento il bias oscilla restando vicino a zero.</p>
+  <p>Più ingressi, e quindi più pesi, non vuol dire automaticamente meglio. Vuol dire più complesso. Guardando i grandi modelli generativi viene spontaneo pensare che uno da 150 miliardi di parametri batta sempre uno da 27. La verità può sorprendere: la qualità e la pulizia dei dati, il contesto e il modo in cui il modello viene allenato contano quanto la sua grandezza.</p>
+  <aside class="margin-note"><span>Nota storica</span>Nel 2022 DeepMind lo mostrò con Chinchilla: un modello da 70 miliardi di parametri, allenato su molti più dati, superava Gopher, che ne aveva 280.</aside>
+  <p>Perché pesi e bias partono tra −1 e 1, e non tra −100 e 100? Avevo scritto “per non far esplodere il gradiente”, ma il motivo è un altro. Con pesi grandi la somma z finisce lontana da zero, dove la sigmoide è quasi piatta: lì il neurone è già sicurissimo, anche se sbaglia, e le correzioni hanno pochissimo effetto. Si chiama saturazione. Partire piccoli tiene il neurone nella zona ripida della curva, dove impara in fretta.</p>
+</section>
+
+<section id="impara" class="prose">
+  <h2>Imparare: una correzione</h2>
+  <p>Per far correggere i pesi serve il metodo <code>impara</code>. Riceve le posizioni e la verità, cioè la scelta corretta: 1 se il cibo è a destra, 0 se è a sinistra. Prima il neurone pensa; poi confronta la sua previsione con la verità. L’errore, previsione meno verità, dice due cose insieme: con il segno la direzione, con la grandezza l’intensità.</p>
+</section>
+
+<div class="lf-wide code-pair">
+<pre class="code tile tile-oat"><code>def impara(self, entrate, verita):
+    previsione = self.pensa(entrate)
+    errore = previsione - verita
+    for i in range(len(self.pesi)):
+<span class="hl">        self.pesi[i] = self.pesi[i] - lr * errore * entrate[i]</span>
+    self.bias = self.bias - lr * errore
+    return errore</code></pre>
+</div>
+
+<section class="prose">
+  <p>Ogni peso si corregge sottraendo un prodotto di tre fattori, e ognuno ha un compito. Il learning rate dà l’intensità del cambiamento in quel passaggio. L’errore dà direzione e intensità. L’entrata dice quanta responsabilità ha avuto quel peso: se ha contribuito poco all’errore, anche la sua correzione deve essere piccola. Non a caso è una sottrazione: il prodotto può essere negativo, e allora il peso sale.</p>
+  <p>Ho continuato il calcolo di prima. La verità era 1, la previsione 0,50625, quindi l’errore è −0,49375.</p>
+</section>
+
+<figure class="figure lf-wide" id="fig-impara">
+  <div class="tile tile-coral fig-tile">
+    <span class="fig-badge" aria-hidden="true">4</span>
+    <div class="knobs">
+      <div class="knob">
+        <div class="knob-head"><span>w₁ · peso dell’agente · entrata 0,25</span><b id="k1-v" class="num">—</b></div>
+        <div class="bar"><span class="zero"></span><span class="ghost" id="k1-g"></span><span class="marker" id="k1-m"></span></div>
+      </div>
+      <div class="knob">
+        <div class="knob-head"><span>w₂ · peso del cibo · entrata 0,75</span><b id="k2-v" class="num">—</b></div>
+        <div class="bar"><span class="zero"></span><span class="ghost" id="k2-g"></span><span class="marker" id="k2-m"></span></div>
+      </div>
+      <div class="knob">
+        <div class="knob-head"><span>bias · “entrata” 1</span><b id="kb-v" class="num">—</b></div>
+        <div class="bar"><span class="zero"></span><span class="ghost" id="kb-g"></span><span class="marker" id="kb-m"></span></div>
+      </div>
+      <div class="knob gauge">
+        <div class="knob-head"><span>previsione sullo stesso esempio · errore <b id="kp-e" class="num">—</b></span><b id="kp-v" class="num">—</b></div>
+        <div class="bar"><span class="half"></span><span class="marker" id="kp-m"></span><span class="goal">verità 1</span></div>
+      </div>
+    </div>
+  </div>
+  <figcaption class="caption"><b>Fig. 4</b> — Una sola correzione, con i miei numeri. Il cerchio vuoto è il valore di prima, quello pieno il nuovo. Il peso del cibo si sposta più di quello dell’agente perché la sua entrata è più grande (0,75 contro 0,25); il bias, con “entrata” 1, più di tutti. Rifacendo il calcolo sullo stesso esempio, la previsione sale da 0,506 a 0,605: l’errore è sceso da −0,494 a −0,395. Ha imparato.</figcaption>
+</figure>
+
+<section class="prose">
+  <p>È una semplificazione di una matematica più profonda, la discesa del gradiente. Ma capire bene questa regola permette di riconoscerla ovunque nel machine learning: non è una formula costruita apposta per questo neurone, è la stessa idea che, applicata a catena, allena reti enormi.</p>
+</section>
+
+<section id="lr" class="prose">
+  <h2>Quanto forte correggere</h2>
+  <p>Perché non dare al learning rate un valore altissimo, così il peso si corregge con più decisione? Perché più velocità porta più rischio. Facciamo finta che il valore perfetto di un peso sia 0,9765 e che adesso valga 0,9104: deve fare ancora un salto verso destra. Con un learning rate enorme il salto va nella direzione giusta, ma supera il bersaglio di molto. Poi torna indietro superandolo di nuovo, sempre di più. Da lì è caos. Anche l’estremo opposto ha un prezzo: con un learning rate minuscolo tutto diventa lentissimo.</p>
+</section>
+
+<figure class="figure lf-wide" id="fig-lr">
+  <div class="tile tile-oat fig-tile">
+    <span class="fig-badge" aria-hidden="true">5</span>
+    <svg viewBox="0 0 560 260" role="img" aria-label="Tre pesi che si avvicinano al valore ideale con learning rate diversi">
+      <g font-family="Instrument Sans, system-ui, sans-serif" font-size="12" fill="#141413">
+        <path id="lr-target" stroke="#C4552F" stroke-width="1.5" stroke-dasharray="4 6"/>
+        <text id="lr-target-l" y="16" fill="#8A3A1F">valore ideale 0,9765</text>
+        <path d="M30 50 H530 M30 130 H530 M30 210 H530" stroke="#141413" stroke-width="1" opacity=".3"/>
+        <text x="30" y="36">lr basso</text><text x="30" y="116">lr adatto</text><text x="30" y="196">lr troppo alto</text>
+        <g id="l1-trail"></g><g id="l2-trail"></g><g id="l3-trail"></g>
+        <circle id="l1-dot" cy="50" r="9" fill="#D97757" stroke="#141413" stroke-width="2.5"/>
+        <circle id="l2-dot" cy="130" r="9" fill="#D97757" stroke="#141413" stroke-width="2.5"/>
+        <circle id="l3-dot" cy="210" r="9" fill="#D97757" stroke="#141413" stroke-width="2.5"/>
+        <text id="l1-out" x="530" y="40" text-anchor="end" opacity="0">fuori scala</text>
+        <text id="l2-out" x="530" y="120" text-anchor="end" opacity="0">fuori scala</text>
+        <text id="l3-out" x="530" y="200" text-anchor="end" opacity="0" fill="#8A3A1F">è esploso</text>
+        <text x="30" y="250" fill="#4D4C48">punto di partenza 0,9104 · un passo ogni 0,85 secondi</text>
+      </g>
+    </svg>
+    <div class="readouts"><span>lr basso: <b id="l1-v" class="num">—</b></span><span>lr adatto: <b id="l2-v" class="num">—</b></span><span>lr troppo alto: <b id="l3-v" class="num">—</b></span></div>
+  </div>
+  <figcaption class="caption"><b>Fig. 5</b> — Lo stesso peso, tre learning rate. I puntini chiari sono i passi già fatti. Il primo si avvicina, ma piano; il secondo arriva in pochi salti; il terzo scavalca il bersaglio, rimbalza sempre più lontano e diverge. Valori illustrativi, scelti per rendere visibile l’idea.</figcaption>
+</figure>
+
+<section class="prose">
+  <p>Nella prima stesura avevo scritto che esistono formule per trovare il learning rate perfetto. Non è così: non c’è una formula che lo dia in anticipo. Si cerca provando, osservando se l’errore scende, e nei modelli moderni lo adattano durante l’allenamento ottimizzatori come Adam. Qui 0,5 funziona perché gli ingressi sono piccoli, tra 0 e 1, e la sigmoide tiene le uscite sotto controllo.</p>
+</section>
+
+<section id="allena" class="prose">
+  <h2>Esempi, voto, allenamento</h2>
+  <p><code>crea_esempio</code> fabbrica il dataset. Generarlo dentro il programma qui è perfetto, perché non ci sono dati “sporchi”: si sceglie una posizione casuale per l’agente e una per il cibo, che è la metafora dell’obiettivo, evitando che coincidano. Poi le due posizioni vengono divise per la larghezza, così 9 diventa 9/20: numeri piccoli, che il neurone digerisce bene. Infine si decide la verità, destra o sinistra, e il metodo restituisce entrate e verità insieme.</p>
+  <p><code>precisione</code> dà il voto. Riceve il neurone da valutare, tra i tanti che potrebbero esistere, e il dataset su cui interrogarlo. Per ogni esempio fa pensare il neurone, trasforma la sua certezza in una scelta e la confronta con la verità, contando le risposte giuste. Si può usare in qualunque momento, anche prima dell’allenamento, per vedere da dove parte.</p>
+  <p><code>allena</code> non va confuso con <code>impara</code>. <code>impara</code> corregge i pesi su un singolo esempio; <code>allena</code> lo ripete su tutti gli esempi, per duecento epoche. A ogni epoca mescola il dataset, perché il neurone impari la regola e non l’ordine in cui gli arrivano gli esempi, e ogni venti epoche stampa l’errore medio, che deve scendere.</p>
+</section>
+
+<figure class="figure lf-wide" id="fig-allena">
+  <div class="tile tile-oat fig-tile">
+    <span class="fig-badge" aria-hidden="true">6</span>
+    <div class="train-grid">
+      <svg viewBox="0 0 560 270" role="img" aria-label="L'errore medio scende epoca dopo epoca durante un allenamento vero">
+        <g font-family="Instrument Sans, system-ui, sans-serif" font-size="13" fill="#4D4C48">
+          <path d="M50 20 V230 H540" fill="none" stroke="#141413" stroke-width="2" stroke-linecap="round"/>
+          <path d="M50 120.9 H540" stroke="#141413" stroke-width="1" stroke-dasharray="3 6" opacity=".3"/>
+          <text x="44" y="234" text-anchor="end">0</text>
+          <text x="44" y="125" text-anchor="end">0,25</text>
+          <text x="44" y="34" text-anchor="end">0,5</text>
+          <text x="50" y="254">epoca 0</text>
+          <text x="530" y="254" text-anchor="end">200</text>
+          <text x="60" y="16" fill="#141413">errore medio</text>
+        </g>
+        <path id="al-path" fill="none" stroke="#C4552F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle id="al-dot" r="6" fill="#FAF9F5" stroke="#141413" stroke-width="2.5" opacity="0"/>
+      </svg>
+      <dl class="stats">
+        <div><dt>epoca</dt><dd id="al-ep" class="num">0</dd></div>
+        <div><dt>errore medio</dt><dd id="al-err" class="num">—</dd></div>
+        <div><dt>precisione prima</dt><dd id="al-prima" class="num">—</dd></div>
+        <div><dt>precisione adesso</dt><dd id="al-dopo" class="num">—</dd></div>
+        <div><dt>w₁ (agente)</dt><dd id="al-w1" class="num">—</dd></div>
+        <div><dt>w₂ (cibo)</dt><dd id="al-w2" class="num">—</dd></div>
+        <div><dt>bias</dt><dd id="al-b" class="num">—</dd></div>
+      </dl>
+    </div>
+    <p class="rule" id="al-rule">I due pesi sono finiti quasi uguali e opposti: z ≈ w · (cibo − agente). Nessuno gliel’ha detto, ma il neurone ha scoperto che conta solo la differenza.</p>
+  </div>
+  <figcaption class="caption"><b>Fig. 6</b> — Un allenamento vero, eseguito adesso nel tuo browser con la stessa matematica del codice: 500 esempi, learning rate 0,5, 200 epoche. La precisione è misurata su 200 esempi nuovi, mai visti durante l’allenamento. Alla fine riparte da capo con pesi nuovi: i numeri cambiano ogni volta, la regola che emerge no.</figcaption>
+</figure>
+
+<section id="terminale" class="prose">
+  <h2>Il cacciatore nel terminale</h2>
+  <p>La parte di disegno e gioco mi era sembrata la più scontata, e non l’avevo commentata. Vale comunque la pena guardarla, perché è lì che il neurone smette di essere numeri e diventa un comportamento.</p>
+  <p><code>disegna</code> pulisce il terminale (<code>cls</code> su Windows, che per Python si chiama <code>nt</code>; <code>clear</code> altrove) e costruisce la riga del mondo carattere per carattere: <code>A</code> per l’agente, <code>*</code> per il cibo, un punto per il vuoto. <code>gioca</code> è un ciclo: guarda, decidi, muoviti, resta dentro i muri con <code>max</code> e <code>min</code>, controlla se hai mangiato, disegna, aspetta. Durante il gioco il neurone non impara più: usa solo <code>pensa</code>. Allenamento e uso sono due fasi separate.</p>
+</section>
+
+<figure class="figure lf-wide" id="fig-terminale">
+  <div class="term fig-tile">
+    <span class="fig-badge" aria-hidden="true">7</span>
+    <div class="term-line muted">&gt; python neuralnet4_corretto.py</div>
+    <div class="term-line" id="term-w"></div>
+    <div class="term-line term-world" id="term-out" aria-label="Il mondo nel terminale"></div>
+    <div class="term-line" id="term-score"></div>
+  </div>
+  <figcaption class="caption"><b>Fig. 7</b> — Il gioco come appare nel terminale, guidato da un neurone allenato poco fa in questa pagina. Una partita dura 50 passi, poi ricomincia. I pesi in alto sono quelli veri del cervello che sta giocando.</figcaption>
+</figure>
+
+<section id="dasolo" class="prose">
+  <h2>La seconda volta, da solo</h2>
+  <blockquote class="quote">
+    <p>“Le cose che bisogna aver imparato prima di farle, le impariamo facendole.”</p>
+    <footer>Aristotele, <cite>Etica Nicomachea</cite>, libro II</footer>
+  </blockquote>
+  <p>Dopo la versione guidata ho chiuso tutto e l’ho riscritto da zero in <code>first.py</code>. Le funzioni hanno nomi diversi, in inglese, e i parametri non sono gli stessi: segno che stavo ricostruendo la struttura, non ricordando le parole a memoria.</p>
+</section>
+
+<div class="lf-wide compare-wrap">
+<table class="compare">
+  <thead><tr><th scope="col"></th><th scope="col">Con la guida</th><th scope="col">Da solo, <code>first.py</code></th></tr></thead>
+  <tbody>
+    <tr><th scope="row">Il neurone</th><td><code>pensa</code>, <code>impara</code></td><td><code>reasoning</code>, <code>learn</code></td></tr>
+    <tr><th scope="row">Dati e voto</th><td><code>crea_esempio</code>, <code>precisione</code></td><td><code>example</code>, <code>precisione</code></td></tr>
+    <tr><th scope="row">Allenamento e gioco</th><td><code>allena</code>, <code>disegna</code>, <code>gioca</code></td><td><code>train</code>, <code>draw</code>, <code>play</code></td></tr>
+    <tr><th scope="row">Larghezza del mondo</th><td>20</td><td>30</td></tr>
+    <tr><th scope="row">Learning rate</th><td>0,5</td><td>0,3</td></tr>
+    <tr><th scope="row">Epoche</th><td>200</td><td>300</td></tr>
+    <tr><th scope="row">Partita</th><td>50 passi, 0,5 s l’uno</td><td>300 passi, 0,04 s l’uno</td></tr>
+    <tr><th scope="row">Esempi per il voto</th><td>200 nuovi, mai visti</td><td>gli stessi dell’allenamento</td></tr>
+  </tbody>
+</table>
+</div>
+
+<section class="prose">
+  <p>Il cuore è uscito giusto al primo colpo: la classe, la sigmoide, la regola di correzione con i segni al posto giusto. La revisione ha trovato quattro cose da sistemare, ed è proprio per trovarle che si riscrive.</p>
+  <ol class="findings">
+    <li><b>Un <code>if</code> al posto di un <code>elif</code> in <code>draw</code>.</b> Nella casella dell’agente il programma scrive <code>W</code>, poi il secondo <code>if</code> controlla il cibo, non lo trova e con il suo <code>else</code> aggiunge anche <code>_</code>. La riga diventa di 31 caratteri e tutto ciò che sta dopo l’agente slitta di uno, cibo compreso.</li>
+    <li><b>Il contatore sbagliato in <code>train</code>.</b> <code>if volte % 5 == 0</code> usa la costante 300, non il contatore <code>i</code>: la condizione è sempre vera e la stampa dice sempre “volta 300”. L’errore scende, ma non lo si vede scendere.</li>
+    <li><b>Un <code>if</code> dove serviva un <code>while</code> in <code>play</code>.</b> Se il cibo nasce sull’agente viene rigenerato una volta sola, e può ricadere nello stesso posto.</li>
+    <li><b>Nessun test set.</b> La precisione è misurata sugli stessi 500 esempi usati per allenare. Così il voto dice quanto il neurone ricorda, non quanto ha capito: è la differenza tra le due curve della Fig. 2 in prima pagina.</li>
+  </ol>
+</section>
+
+<figure class="figure lf-wide" id="fig-bug">
+  <div class="term fig-tile">
+    <span class="fig-badge" aria-hidden="true">8</span>
+    <div class="term-label">come dovrebbe essere · <span id="bug-ok-n"></span></div>
+    <div class="term-line term-world" id="bug-ok"></div>
+    <div class="term-label">come la disegna <code>first.py</code> · <span id="bug-ko-n"></span></div>
+    <div class="term-line term-world" id="bug-ko"></div>
+  </div>
+  <figcaption class="caption"><b>Fig. 8</b> — Lo stesso istante del gioco, disegnato in due modi. Sotto, il carattere in più dopo <code>W</code> spinge avanti il resto della riga: il <code>$</code> appare una casella più a destra di dove si trova davvero. Quando l’agente lo raggiunge, le due righe tornano a coincidere.</figcaption>
+</figure>
+
+<section id="dopo" class="prose">
+  <h2>Cosa viene dopo</h2>
+  <p>La prima parte è chiusa, il progetto no. Due cose restano aperte.</p>
+  <p><b>Imparare per tentativi.</b> Finora ho barato un po’: ero io, tramite <code>crea_esempio</code>, a dire al neurone la mossa giusta. Nella seconda parte nessuno gliela dirà. L’agente proverà, il mondo gli dirà solo se la distanza dal cibo è scesa o salita, e da questo dovrà correggersi. È l’idea di base dell’apprendimento per rinforzo.</p>
+  <p><b>Ripetere.</b> <code>first.py</code> è la prima di molte riscritture da zero. Il criterio resta quello della premessa: questo progetto sarà davvero mio quando costruire un neurone così non mi costerà più fatica.</p>
+  <a class="back-cta" href="index.html#progetti">← Torna ai progetti</a>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <span>Lore · Torino · 2026</span>
+    <nav aria-label="Navigazione"><a href="index.html">Torna al quaderno</a></nav>
+  </div>
+</footer>
+
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/common.js"></script>
+<script src="assets/js/neuralnet4.js"></script>
+</body>
+</html>
