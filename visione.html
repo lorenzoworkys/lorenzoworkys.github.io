@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300..700;1,8..60,300..700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/style.css?v=20261007e">
 </head>
 <body>
 <div class="page">
@@ -172,21 +172,22 @@
 </section>
 
 <figure class="figure lf-wide" id="fig-cerchio">
-  <div class="tile tile-coral fig-tile">
+  <div class="tile tile-coral fig-tile kc">
     <span class="fig-badge" aria-hidden="true">2</span>
-    <svg viewBox="0 0 1000 360" role="img" aria-label="Un cerchio che cresce lentamente: dentro ciò che so, sul bordo ciò che so di non sapere">
-      <g font-family="Instrument Sans, system-ui, sans-serif" fill="#141413">
-        <text x="40" y="44" font-size="15" fill="#8A3A1F">ciò che non so di non sapere</text>
-        <text x="960" y="336" font-size="15" text-anchor="end" fill="#8A3A1F">ciò che non so di non sapere</text>
-        <g id="kc-group">
-          <circle id="kc-circle" cx="500" cy="180" r="40" fill="#E3DACC" stroke="#C4552F" stroke-width="5"/>
-          <text x="500" y="186" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-size="20" font-style="italic">ciò che so</text>
-          <path id="kc-lead" fill="none" stroke="#141413" stroke-width="1.2"/>
-          <text id="kc-lead-t" font-size="15">ciò che so di non sapere</text>
-        </g>
-      </g>
+    <svg id="kc-svg" viewBox="0 0 1000 420" role="img" aria-label="Un campo di punti: il cerchio di ciò che so cresce, i punti al suo interno diventano noti, quelli sul bordo si accendono come domande">
+      <g id="kc-rings" fill="none" stroke="#141413" stroke-width="1" stroke-dasharray="2 6" opacity=".4"></g>
+      <circle id="kc-fill" cx="500" cy="210" r="40" fill="#FAF9F5" opacity=".5"/>
+      <g id="kc-dots"></g>
+      <circle id="kc-edge" cx="500" cy="210" r="40" fill="none" stroke="#C4552F" stroke-width="1.6"/>
+      <text id="kc-in" class="kc-hand" x="500" y="217" text-anchor="middle" font-size="22">ciò che so</text>
+      <g id="kc-tag"><path id="kc-lead" fill="none" stroke="#141413" stroke-width="1"/><text id="kc-lead-t" class="kc-hand" font-size="18">ciò che so di non sapere</text></g>
+      <text class="kc-hand kc-far" x="40" y="46" font-size="18">ciò che non so di non sapere</text>
     </svg>
-    <div class="readouts"><span>il cerchio è cresciuto <b id="kc-r" class="num">—</b> volte</span><span>ciò che so: <b id="kc-a" class="num">—</b></span><span>il confine con ciò che non so: <b id="kc-p" class="num">—</b></span></div>
+    <div class="kc-bars">
+      <div class="kc-bar"><span>ciò che so <i>· l’area</i></span><span class="kc-track"><i id="kc-ab"></i></span><b id="kc-a" class="num">—</b></div>
+      <div class="kc-bar edge"><span>il confine con ciò che non so <i>· il bordo</i></span><span class="kc-track"><i id="kc-pb"></i></span><b id="kc-p" class="num">—</b></div>
+      <div class="kc-note">raggio <b id="kc-r" class="num">—</b> volte quello di partenza</div>
+    </div>
   </div>
   <figcaption class="caption"><b>Fig. 2</b> — Il cerchio di ciò che so. Quando il raggio raddoppia, l’area diventa quattro volte più grande e il bordo due: la conoscenza corre più veloce delle domande, ma le domande non smettono mai di crescere.</figcaption>
 </figure>
@@ -273,9 +274,9 @@
 
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/js/config.js"></script>
-<script src="assets/js/common.js"></script>
-<script src="assets/js/opening.js"></script>
-<script src="assets/js/visione.js"></script>
+<script src="assets/js/config.js?v=20261007e"></script>
+<script src="assets/js/common.js?v=20261007e"></script>
+<script src="assets/js/opening.js?v=20261007e"></script>
+<script src="assets/js/visione.js?v=20261007e"></script>
 </body>
 </html>

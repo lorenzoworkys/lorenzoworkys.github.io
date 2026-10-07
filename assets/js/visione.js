@@ -49,22 +49,52 @@
   /* ---------- Fig. 2: il cerchio di ciò che so ---------- */
   (function () {
     const fig = $('fig-cerchio'); if (!fig) return;
-    const R0 = 40, R1 = 150, CX = 500, CY = 180;
+    // Un campo di punti: tutto ciò che si potrebbe sapere. Il cerchio cresce; i punti che
+    // contiene diventano noti, quelli sul bordo si accendono: sono le domande che ora so fare.
+    const R0 = 40, R1 = 160, CX = 500, CY = 210, BAND = 9, NS = 'http://www.w3.org/2000/svg';
+    const dots = [];
+    let seed = 11;
+    const rnd = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+    for (let y = 14; y < 420; y += 20) for (let x = 14; x < 1000; x += 20) {
+      const px = x + (rnd() - 0.5) * 12, py = y + (rnd() - 0.5) * 12;
+      const c = document.createElementNS(NS, 'circle');
+      c.setAttribute('cx', px.toFixed(1)); c.setAttribute('cy', py.toFixed(1)); c.setAttribute('r', '1.6');
+      c.setAttribute('class', 'kc-dot');
+      $('kc-dots').appendChild(c);
+      dots.push({ c, d: Math.hypot(px - CX, py - CY), state: '' });
+    }
+    const rings = $('kc-rings');
+    let ringsDrawn = 0;
+    function ring(r) {
+      const c = document.createElementNS(NS, 'circle');
+      c.setAttribute('cx', CX); c.setAttribute('cy', CY); c.setAttribute('r', r);
+      rings.appendChild(c);
+    }
     function draw(t) {
-      const k = reduce ? 9 : t % 18;
-      const s = k < 1 ? 0 : (k < 12 ? ease((k - 1) / 11) : 1);
-      const op = k < 15.5 ? 1 : 1 - ease((k - 15.5) / 2.5);
+      const k = reduce ? 9 : t % 20;
+      const s = k < 1.2 ? 0 : (k < 13 ? ease((k - 1.2) / 11.8) : 1);
+      const fade = k < 17 ? 1 : 1 - ease((k - 17) / 3);
       const r = R0 + (R1 - R0) * s;
-      $('kc-circle').setAttribute('r', r.toFixed(1));
-      $('kc-group').setAttribute('opacity', (k < 0.6 ? ease(k / 0.6) : op).toFixed(3));
-      const a = -Math.PI / 4, px = CX + r * Math.cos(a), py = CY + r * Math.sin(a);
-      const lx = px + 60, ly = py - 34;
+      // ogni raddoppio lascia un anello a matita, come gli anelli di un albero
+      if (k < 1) { rings.textContent = ''; ringsDrawn = 0; }
+      [R0, R0 * 2, R0 * 4].forEach((rr, i) => { if (r >= rr - 0.5 && ringsDrawn <= i) { ring(rr); ringsDrawn = i + 1; } });
+      ['kc-fill', 'kc-edge'].forEach((id) => $(id).setAttribute('r', r.toFixed(1)));
+      dots.forEach((p) => {
+        const st = p.d < r - BAND ? 'known' : (Math.abs(p.d - r) <= BAND ? 'edge' : '');
+        if (st !== p.state) { p.state = st; p.c.setAttribute('class', 'kc-dot ' + st); p.c.setAttribute('r', st === 'edge' ? '3.2' : (st === 'known' ? '2.2' : '1.6')); }
+      });
+      $('kc-svg').style.opacity = (k < 0.8 ? ease(k / 0.8) : fade).toFixed(3);
+      $('kc-in').setAttribute('opacity', Math.max(0, Math.min(1, (r - 52) / 20)).toFixed(3));
+      const a = -Math.PI / 4.6, px = CX + r * Math.cos(a), py = CY + r * Math.sin(a);
+      const lx = px + 56, ly = py - 30;
       $('kc-lead').setAttribute('d', 'M' + px.toFixed(1) + ' ' + py.toFixed(1) + ' L' + lx.toFixed(1) + ' ' + ly.toFixed(1) + ' H' + (lx + 14).toFixed(1));
-      const lt = $('kc-lead-t'); lt.setAttribute('x', (lx + 20).toFixed(1)); lt.setAttribute('y', (ly + 5).toFixed(1));
-      const g = r / R0;
+      const lt = $('kc-lead-t'); lt.setAttribute('x', (lx + 20).toFixed(1)); lt.setAttribute('y', (ly + 6).toFixed(1));
+      const g = r / R0, max = (R1 / R0) * (R1 / R0);
       $('kc-r').textContent = it(g, 1);
       $('kc-a').textContent = '× ' + it(g * g, 1);
       $('kc-p').textContent = '× ' + it(g, 1);
+      $('kc-ab').style.width = (g * g / max * 100).toFixed(2) + '%';
+      $('kc-pb').style.width = (g / max * 100).toFixed(2) + '%';
     }
     draw(reduce ? 99 : 0);
     figs.push({ el: fig, visible: false, draw });

@@ -701,3 +701,24 @@ body { overflow-x: clip; }
 .opening-home .op-index { gap: 4px; margin-top: 6px; }
 .opening-home .op-index a { font-size: 15px; }
 @media (max-height: 820px) { .opening-home .op-dek { display: none; } }
+
+/* Visione, Fig. 2: il campo di ciò che si può sapere */
+.kc svg { display: block; width: 100%; height: auto; }
+.kc-hand { font-family: var(--serif); font-style: italic; fill: #141413; }
+.kc-far { fill: #8A3A1F; }
+.kc-dot { fill: #141413; opacity: .2; transition: fill .5s ease, opacity .5s ease; }
+.kc-dot.known { opacity: .7; }
+.kc-dot.edge { fill: #C4552F; opacity: 1; }
+.kc-bars { display: flex; flex-direction: column; gap: 10px; font-family: var(--sans); font-size: 14px; color: #4D4C48; }
+.kc-bar { display: grid; grid-template-columns: minmax(150px, 260px) minmax(0, 1fr) 56px; align-items: center; gap: 16px; }
+.kc-bar i { font-style: normal; opacity: .7; }
+.kc-bar b { color: var(--ink); font-weight: 600; text-align: right; }
+.kc-track { position: relative; height: 6px; border-radius: 3px; background: rgba(20, 20, 19, .12); overflow: hidden; }
+.kc-track i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 3px; background: #141413; opacity: 1; }
+.kc-bar.edge .kc-track i { background: #C4552F; }
+.kc-note { margin-top: 2px; font-size: 13px; }
+.kc-note b { color: var(--ink); }
+@media (max-width: 640px) { .kc-bar { grid-template-columns: minmax(0, 1fr) 48px; } .kc-track { grid-column: 1 / -1; grid-row: 2; } }
+.kc-hand { paint-order: stroke; stroke: #EBCECE; stroke-width: 7px; stroke-linejoin: round; }
+#kc-in { stroke: #F3EDE9; }
+#kc-rings { opacity: .55; }
