@@ -90,6 +90,111 @@
     return first ? first.text : '';
   }
 
-  window.Lab = { db, configured, initTheme, allPosts, formatDate, el, renderBlocks, excerpt, safeUrl };
-  document.addEventListener('DOMContentLoaded', initTheme);
+  /* ---------- Movimento ----------
+     Due velocità soltanto: risposte rapide (0,2 s, nel CSS) e comparse lente (0,8 s, qui).
+     Tutto parte solo se <html> ha la classe "motion", messa nell'intestazione di ogni pagina. */
+  const motion = document.documentElement.classList.contains('motion');
+
+  // Il titolo grande compare parola per parola, con ritardi un po' irregolari, come scritto a mano.
+  function words(h) {
+    if (!h || h.dataset.words) return;
+    h.dataset.words = '1';
+    const parts = [];
+    Array.from(h.childNodes).forEach((n) => {
+      if (n.nodeType === 3) {
+        const frag = document.createDocumentFragment();
+        n.textContent.split(/(\s+)/).forEach((t) => {
+          if (!t) return;
+          if (/^\s+$/.test(t)) { frag.appendChild(document.createTextNode(t)); return; }
+          const s = el('span', { class: 'w', text: t });
+          parts.push(s); frag.appendChild(s);
+        });
+        n.replaceWith(frag);
+      } else if (n.nodeType === 1) { n.classList.add('w'); parts.push(n); }
+    });
+    parts.forEach((s, i) => {
+      const last = i === parts.length - 1 && s.classList.contains('dot');
+      s.style.transitionDelay = Math.round(last ? i * 70 + 520 : 80 + i * 70 + Math.random() * 160) + 'ms';
+    });
+    requestAnimationFrame(() => requestAnimationFrame(() => h.classList.add('words-in')));
+  }
+
+  // Blocchi che salgono e si accendono la prima volta che entrano nello schermo.
+  const REVEAL = [
+    '.hero > p', '.quote', '.notes-bar', '.note', '.aside', '.section-head', '.research-text', '.figure',
+    '.project-feature', '.cta-card', '.project-row', '.about-left', '.about-text',
+    '.lf-hero .meta', '.lf-hero .dek', '.status-cards', '.toc', '.prose', '.code-pair',
+    '.article > *', '.comments', '.desk-form', '.desk-preview', '.login'
+  ].join(',');
+  const revealIO = motion && 'IntersectionObserver' in window ? new IntersectionObserver((entries) => {
+    entries.filter((e) => e.isIntersecting)
+      .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
+      .forEach((e, i) => {
+        const n = e.target;
+        revealIO.unobserve(n);
+        const hero = n.closest('.hero, .lf-hero');
+        n.style.transitionDelay = (hero ? 420 : 0) + Math.min(i, 5) * 90 + 'ms';
+        n.classList.add('in');
+        // a comparsa finita l'elemento torna com'era, con le sue transizioni di sempre
+        n.addEventListener('transitionend', function done(ev) {
+          if (ev.target !== n || ev.propertyName !== 'opacity') return;
+          n.removeEventListener('transitionend', done);
+          n.classList.remove('rv', 'in'); n.style.transitionDelay = '';
+        });
+      });
+  }, { rootMargin: '0px 0px -8% 0px' }) : null;
+
+  // Le curve disegnate partono quando le guardi, non al caricamento.
+  const drawIO = motion && 'IntersectionObserver' in window ? new IntersectionObserver((entries) => entries.forEach((e) => {
+    if (e.isIntersecting) { e.target.classList.add('play'); drawIO.unobserve(e.target); }
+  }), { rootMargin: '0px 0px -12% 0px' }) : null;
+
+  function reveal(root) {
+    if (!revealIO) return;
+    (root || document).querySelectorAll(REVEAL).forEach((n) => {
+      if (n.dataset.rv) return;
+      n.dataset.rv = '1';
+      if (n.parentElement && n.parentElement.closest('[data-rv]')) return; // già dentro un blocco che compare
+      n.classList.add('rv');
+      revealIO.observe(n);
+    });
+    (root || document).querySelectorAll('.draw:not(.play)').forEach((n) => drawIO.observe(n));
+  }
+
+  // Le frecce dei link scivolano al passaggio del mouse.
+  function arrows(root) {
+    (root || document).querySelectorAll('.read-more, .back-cta').forEach((a) => {
+      if (a.querySelector('.arrow') || !/→\s*$/.test(a.textContent)) return;
+      a.textContent = a.textContent.replace(/\s*→\s*$/, ' ');
+      a.appendChild(el('span', { class: 'arrow', 'aria-hidden': 'true', text: '→' }));
+    });
+  }
+
+  // La testata resta in cima; scorrendo si assottiglia. Su telefono si nasconde mentre scendi.
+  function masthead() {
+    const m = document.querySelector('.masthead');
+    if (!m) return;
+    let lastY = window.scrollY, ticking = false;
+    function update() {
+      ticking = false;
+      const y = window.scrollY;
+      m.classList.toggle('scrolled', y > 12);
+      const phone = window.innerWidth <= 640;
+      if (phone && y > 160 && y > lastY + 4) m.classList.add('tucked');
+      else if (!phone || y < lastY - 4 || y <= 160) m.classList.remove('tucked');
+      lastY = y;
+    }
+    window.addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+    update();
+  }
+
+  function refresh(root) { arrows(root); reveal(root); }
+
+  window.Lab = { db, configured, initTheme, allPosts, formatDate, el, renderBlocks, excerpt, safeUrl, refresh };
+  document.addEventListener('DOMContentLoaded', () => {
+    initTheme();
+    masthead();
+    if (motion) document.querySelectorAll('.hero h1, .lf-hero h1').forEach(words);
+    refresh();
+  });
 })();

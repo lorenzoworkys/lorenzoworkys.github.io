@@ -30,6 +30,7 @@
         Lab.el('a', { class: 'read-more', href, text: 'Leggi la nota e i commenti →' })
       ]));
     });
+    Lab.refresh(list);
   }
   document.querySelectorAll('.filter').forEach((b) => b.addEventListener('click', () => {
     filter = b.dataset.tag;

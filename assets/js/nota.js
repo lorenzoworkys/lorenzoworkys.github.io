@@ -34,6 +34,7 @@
     const body = Lab.el('div', { class: 'article-body' });
     Lab.renderBlocks(body, p.body);
     box.appendChild(body);
+    Lab.refresh(box.parentElement);
 
     $('comments').hidden = false;
     if (!Lab.db) { $('comments-off').hidden = false; return; }
