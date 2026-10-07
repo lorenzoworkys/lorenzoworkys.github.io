@@ -35,9 +35,57 @@
 
 <main class="longform">
 
-<section class="lf-hero">
+<section class="opening opening-vision" data-header="solid" aria-labelledby="op-title">
+  <div class="op-panel" aria-hidden="true"></div>
+  <div class="op-strip l2" aria-hidden="true">
+    <svg viewBox="0 0 400 900" preserveAspectRatio="xMaxYMid slice"><g fill="none" stroke="#3D3D3A" stroke-width="1.4" stroke-linecap="round" opacity=".75">
+      <circle cx="330" cy="430" r="46"/><circle cx="330" cy="430" r="92" stroke-dasharray="3 7"/><circle cx="330" cy="430" r="150" stroke-dasharray="2 10" opacity=".6"/>
+      <path d="M262 300 L316 392" stroke-width="1"/></g>
+      <g font-family="Source Serif 4, Georgia, serif" font-style="italic" fill="#3D3D3A"><text x="330" y="436" text-anchor="middle" font-size="17">ciò che so</text><text x="262" y="290" text-anchor="middle" font-size="14">il bordo</text></g>
+    </svg>
+  </div>
+  <div class="op-strip l1" aria-hidden="true">
+    <svg viewBox="0 0 400 900" preserveAspectRatio="xMaxYMid slice">
+      <g stroke="#3D3D3A" stroke-width=".6" opacity=".25"><path d="M200 0V900M240 0V900M280 0V900M320 0V900M360 0V900M200 120H400M200 160H400M200 200H400M200 240H400M200 280H400M200 320H400M200 360H400M200 400H400M200 440H400M200 480H400M200 520H400M200 560H400M200 600H400M200 640H400M200 680H400M200 720H400M200 760H400"/></g>
+      <g fill="none" stroke="#141413" stroke-width="1.6" stroke-linecap="round"><path d="M300 180 V720"/><path d="M290 720H310M286 540H314M286 360H314M286 180H314"/></g>
+      <circle cx="300" cy="589" r="9" fill="#D97757" stroke="#141413" stroke-width="1.6"/>
+      <g font-family="Instrument Sans, system-ui, sans-serif" font-size="15" fill="#141413"><text x="324" y="725">0</text><text x="324" y="545">I</text><text x="324" y="365">II</text><text x="324" y="185">III</text></g>
+      <text x="318" y="594" font-family="Source Serif 4, Georgia, serif" font-style="italic" font-size="17" fill="#141413">0,73</text>
+    </svg>
+  </div>
+  <div class="op-strip r1" aria-hidden="true">
+    <svg viewBox="0 0 400 900" preserveAspectRatio="xMinYMid slice">
+      <path d="M70 150 V760" stroke="#141413" stroke-width="1.6" stroke-linecap="round"/>
+      <g fill="#E3DACC" stroke="#141413" stroke-width="1.6"><circle cx="70" cy="190" r="7"/><circle cx="70" cy="300" r="7"/><circle cx="70" cy="410" r="7"/><circle cx="70" cy="520" r="7"/><circle cx="70" cy="630" r="7"/></g>
+      <circle cx="70" cy="730" r="9" fill="#141413"/>
+      <g font-family="Instrument Sans, system-ui, sans-serif" font-size="15" font-weight="600" fill="#141413"><text x="92" y="195">1854</text><text x="92" y="305">1936</text><text x="92" y="415">1948</text><text x="92" y="525">1958</text><text x="92" y="635">2018</text><text x="92" y="735">2026</text></g>
+    </svg>
+  </div>
+  <div class="op-strip r2" aria-hidden="true">
+    <svg viewBox="0 0 400 900" preserveAspectRatio="xMinYMid slice">
+      <text transform="translate(70 760) rotate(-90)" font-family="Source Serif 4, Georgia, serif" font-style="italic" font-size="44" fill="#F0EEE6" opacity=".85">virtute e canoscenza</text>
+    </svg>
+  </div>
+  <div class="op-stage">
+    <div class="op-text">
+      <p class="op-date">Versione 0.1 · 3 ottobre 2026</p>
+      <h1 id="op-title">Perché lo faccio</h1>
+      <ol class="op-index" aria-label="Capitoli">
+        <li style="--i:0"><a href="#macchina"><span class="n">(1)</span><span class="lead"></span><span>Una macchina che parlava</span></a></li>
+        <li style="--i:1"><a href="#scala"><span class="n">(2)</span><span class="lead"></span><span>Una scala per una civiltà</span></a></li>
+        <li style="--i:2"><a href="#ignorante"><span class="n">(3)</span><span class="lead"></span><span>Ignorante, e fiero di non restarlo</span></a></li>
+        <li style="--i:3"><a href="#capire"><span class="n">(4)</span><span class="lead"></span><span>Cosa voglio capire</span></a></li>
+        <li style="--i:4"><a href="#giganti"><span class="n">(5)</span><span class="lead"></span><span>Sulle spalle dei giganti</span></a></li>
+        <li style="--i:5"><a href="#arrivare"><span class="n">(6)</span><span class="lead"></span><span>Dove voglio arrivare</span></a></li>
+      </ol>
+    </div>
+  </div>
+  <button type="button" class="op-skip">Salta l’introduzione</button>
+  <span class="op-scroll" aria-hidden="true">Scorri ↓</span>
+</section>
+
+<section class="lf-hero lf-after">
   <div class="meta"><span class="tag">Visione</span><span>versione 0.1</span><span>3 ottobre 2026</span><span>8 minuti di lettura</span></div>
-  <h1>Perché lo faccio</h1>
   <p class="dek">Cosa mi ha portato fin qui, cosa voglio capire e dove spero di arrivare. È una prima versione: la riscriverò quando sarò cresciuto abbastanza da guardarla con altri occhi.</p>
 </section>
 
@@ -46,14 +94,14 @@
   <footer>Dante Alighieri, <cite>Inferno</cite>, canto XXVI</footer>
 </blockquote>
 
-<section class="prose">
+<section id="macchina" class="prose">
   <h2>Una macchina che parlava</h2>
   <p class="lead">Ho diciotto anni, ma la fissazione per la crescita personale e per l’informatica è cominciata molto prima. Poi, nel 2018, arrivò il primo GPT. Una macchina che comunica: bastava l’idea a togliermi il sonno.</p>
   <p>All’inizio la vidi come un oracolo. Un’intelligenza che sa tutto, capace di saziare una curiosità che non si sazia mai: una <i>all knowing machine</i>, la chiamavo così. Durò poco. Guardandola meglio capii che era un modello minuscolo, 117 milioni di parametri, che a malapena riusciva a mettere insieme una frase.</p>
   <p>Ma non arrivò la delusione. Arrivò il contrario. Se una cosa così piccola riusciva già a parlare, cosa sarebbe diventata crescendo? Da quel giorno il mio amore per l’informatica è cresciuto, e accanto a lui ne è nato un altro, per la ricerca scientifica. Non mi bastava più usare le macchine. Volevo capire come pensano.</p>
 </section>
 
-<section class="prose">
+<section id="scala" class="prose">
   <h2>Una scala per misurare una civiltà</h2>
   <p>Nel 1964 l’astronomo sovietico Nikolaj Kardašëv propose un modo semplice, quasi spietato, di misurare una civiltà: guardare quanta energia riesce a usare. Una civiltà di tipo I sfrutta energia su scala planetaria, una di tipo II su scala stellare, una di tipo III su scala galattica. Nel 1973 Carl Sagan la trasformò in una scala continua, con una formula, e da allora possiamo darci un voto. Oggi l’umanità sta intorno a 0,72–0,73.</p>
   <p>Mi piace perché non misura le intenzioni, misura i risultati. Non chiede quanto una civiltà si creda avanzata: chiede cosa riesce davvero a fare. Per questo la considero una delle migliori scale di riferimento che abbiamo, e i miei complimenti vanno a Kardašëv.</p>
@@ -112,7 +160,7 @@
   <p>Se nella mia vita riuscissi a spostare quel numero anche di pochissimo, ne sarei contento. Ho già qualche idea su dove guardare: un’intelligenza artificiale che governa un generatore solare in orbita è una delle tante. Ma so bene che oggi sono idee, non progetti.</p>
 </section>
 
-<section class="prose">
+<section id="ignorante" class="prose">
   <h2>Ignorante, e fiero di non restarlo</h2>
   <blockquote class="quote">
     <p>“Mi sembra di essere più sapiente di lui almeno in questo: che ciò che non so, non credo di saperlo.”</p>
@@ -143,7 +191,7 @@
   <figcaption class="caption"><b>Fig. 2</b> — Il cerchio di ciò che so. Quando il raggio raddoppia, l’area diventa quattro volte più grande e il bordo due: la conoscenza corre più veloce delle domande, ma le domande non smettono mai di crescere.</figcaption>
 </figure>
 
-<section class="prose">
+<section id="capire" class="prose">
   <h2>Cosa voglio capire</h2>
   <p>Questo sito è il mio modo di segnare quel percorso: progetti piccoli, documentati, con i miei errori in vista. È la storia di una crescita verso una comprensione sufficiente, e un giorno superiore, di come le macchine pensano davvero.</p>
   <blockquote class="quote">
@@ -154,7 +202,7 @@
   <p>Per me il successo è semplice: essere meglio di quello che ero, in modo concreto e dimostrabile. Questo sito serve anche a dimostrarlo, prima di tutto a me stesso. E se seguendo questo percorso qualcuno decidesse di fare lo stesso, di smettere di ignorare qualcosa che dava per scontato, sarebbe il risultato più bello di tutti.</p>
 </section>
 
-<section class="prose">
+<section id="giganti" class="prose">
   <h2>Sulle spalle dei giganti</h2>
   <blockquote class="quote">
     <p>“Se ho visto più lontano, è perché stavo sulle spalle di giganti.”</p>
@@ -166,7 +214,7 @@
 </section>
 
 <figure class="figure lf-wide" id="fig-giganti">
-  <div class="tile tile-oat fig-tile">
+  <div class="tile tile-oat fig-tile torn-top">
     <span class="fig-badge" aria-hidden="true">3</span>
     <ol class="timeline" id="timeline">
       <li style="--i:0"><span class="tl-year">1854</span><span class="tl-who">George Boole</span><span class="tl-what">Le leggi del pensiero: la logica diventa algebra.</span></li>
@@ -188,10 +236,21 @@
 </figure>
 
 <section class="prose">
-  <p>Rispetto i nomi di oggi, quelli che lavorano alla frontiera dell’intelligenza artificiale: Anthropic, OpenAI, Google DeepMind. E rispetto chi ha troppa poca luce: gli sviluppatori open source che costruiscono, correggono e condividono senza che quasi nessuno conosca il loro nome. Gran parte di ciò che uso ogni giorno esiste grazie a loro. Un grande grazie anche a loro.</p>
+  <div class="qtabs">
+    <script type="application/json">[
+      { "tab": "Turing", "text": "“Possiamo vedere solo poco davanti a noi, ma possiamo vedere che lì c’è molto da fare.”", "who": "Alan Turing", "where": "Computing Machinery and Intelligence, 1950" },
+      { "tab": "Feynman", "text": "“Ciò che non so creare, non lo capisco.”", "who": "Richard Feynman", "where": "Scritto sulla sua lavagna, 1988" },
+      { "tab": "Hamming", "text": "“Lo scopo del calcolo è la comprensione, non i numeri.”", "who": "Richard Hamming", "where": "1962" },
+      { "tab": "Accademia del Cimento", "text": "“Provando e riprovando.”", "who": "Accademia del Cimento", "where": "Motto, Firenze, 1657" }
+    ]</script>
+  </div>
 </section>
 
 <section class="prose">
+  <p>Rispetto i nomi di oggi, quelli che lavorano alla frontiera dell’intelligenza artificiale: Anthropic, OpenAI, Google DeepMind. E rispetto chi ha troppa poca luce: gli sviluppatori open source che costruiscono, correggono e condividono senza che quasi nessuno conosca il loro nome. Gran parte di ciò che uso ogni giorno esiste grazie a loro. Un grande grazie anche a loro.</p>
+</section>
+
+<section id="arrivare" class="prose">
   <h2>Dove voglio arrivare</h2>
   <p>Il vicino è chiaro: quest’anno finire la serie di neuroni, capirne la matematica oltre la logica, arrivare a costruire reti vere senza appunti accanto. E documentare tutto, qui.</p>
   <p>Il lontano è più sfocato, ed è giusto così. So che voglio fare ricerca sull’intelligenza artificiale, e so che per me ricerca e impresa vanno a braccetto. La ricerca nutre il piacere di trovare ciò che nessuno si aspettava; l’impresa quello di vedere un’idea diventare reale e crescere. Una finanzia l’altra, l’altra rende la prima più forte.</p>
@@ -216,6 +275,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/js/config.js"></script>
 <script src="assets/js/common.js"></script>
+<script src="assets/js/opening.js"></script>
 <script src="assets/js/visione.js"></script>
 </body>
 </html>

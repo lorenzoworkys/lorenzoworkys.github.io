@@ -54,6 +54,7 @@
   function el(tag, attrs, children) {
     const n = document.createElement(tag);
     if (attrs) for (const k in attrs) {
+      if (attrs[k] == null) continue;
       if (k === 'text') n.textContent = attrs[k];
       else if (k === 'class') n.className = attrs[k];
       else n.setAttribute(k, attrs[k]);
@@ -175,10 +176,14 @@
     const m = document.querySelector('.masthead');
     if (!m) return;
     let lastY = window.scrollY, ticking = false;
+    const opening = document.querySelector('.opening');
+    if (opening) opening.style.setProperty('--mast-h', m.offsetHeight + 'px');
     function update() {
       ticking = false;
       const y = window.scrollY;
       m.classList.toggle('scrolled', y > 12);
+      // sopra la scena scura d'apertura la testata diventa trasparente e chiara
+      if (opening && opening.dataset.header !== 'solid') m.classList.toggle('on-dark', opening.getBoundingClientRect().bottom > m.offsetHeight);
       const phone = window.innerWidth <= 640;
       if (phone && y > 160 && y > lastY + 4) m.classList.add('tucked');
       else if (!phone || y < lastY - 4 || y <= 160) m.classList.remove('tucked');
@@ -188,12 +193,95 @@
     update();
   }
 
+  // Inchiostro: bordi appena irregolari e piccoli vuoti, come una pagina stampata.
+  // Safari applica male i filtri SVG al testo HTML, quindi lì i titoli restano puliti.
+  function ink() {
+    if (/^((?!chrome|android|crios|fxios).)*safari/i.test(navigator.userAgent)) return;
+    const svg = '<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><filter id="lore-ink" x="-4%" y="-15%" width="108%" height="130%" color-interpolation-filters="sRGB">' +
+      '<feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="4" result="n"/>' +
+      '<feDisplacementMap in="SourceGraphic" in2="n" scale="0.7" xChannelSelector="R" yChannelSelector="G" result="rough"/>' +
+      '<feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="2" seed="12" result="s"/>' +
+      '<feColorMatrix in="s" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -8 0 0 0 7.3" result="holes"/>' +
+      '<feComposite in="rough" in2="holes" operator="in"/></filter></svg>';
+    document.body.insertAdjacentHTML('afterbegin', svg);
+    document.documentElement.classList.add('ink');
+  }
+
+  // Barra a tacche sul bordo sinistro: una lineetta per sezione, quella corrente più lunga.
+  function rail() {
+    const heads = Array.from(document.querySelectorAll('.longform .prose h2'));
+    if (heads.length < 4) return;
+    const nav = el('nav', { class: 'rail', 'aria-label': 'Sezioni della pagina' });
+    const links = heads.map((h, i) => {
+      const sec = h.closest('[id]');
+      if (!sec || !sec.id) { h.id = h.id || 'sezione-' + (i + 1); }
+      const id = (sec && sec.id) || h.id;
+      const a = el('a', { href: '#' + id, 'aria-label': h.textContent }, [el('span', { class: 'pill', text: h.textContent })]);
+      nav.appendChild(a);
+      return { a, h };
+    });
+    document.body.appendChild(nav);
+    let ticking = false;
+    function update() {
+      ticking = false;
+      const mark = window.innerHeight * 0.35;
+      let cur = -1;
+      links.forEach((l, i) => { if (l.h.getBoundingClientRect().top < mark) cur = i; });
+      links.forEach((l, i) => l.a.classList.toggle('on', i === cur));
+      nav.classList.toggle('show', heads[0].getBoundingClientRect().top < window.innerHeight);
+    }
+    window.addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+    update();
+  }
+
+  // Citazioni a schede: si sceglie un nome, e la scheda successiva sbuca sfumata a destra.
+  function qtabs() {
+    document.querySelectorAll('.qtabs').forEach((box) => {
+      const data = JSON.parse(box.querySelector('script[type="application/json"]').textContent);
+      const nav = el('div', { class: 'qtabs-nav', role: 'tablist', 'aria-label': 'Citazioni' });
+      const track = el('div', { class: 'qtabs-track' });
+      box.appendChild(nav); box.appendChild(track);
+      const card = (q, peek) => el('figure', { class: 'qcard' + (peek ? ' peek' : ''), role: peek ? null : 'tabpanel' }, [
+        el('span', { class: 'q-label', text: 'Citazione' }),
+        el('blockquote', { text: q.text }),
+        el('figcaption', { class: 'q-foot' }, [
+          el('div', {}, [el('span', { text: 'Chi' }), q.who]),
+          el('div', {}, [el('span', { text: 'Dove e quando' }), q.where])
+        ])
+      ]);
+      const buttons = data.map((q, i) => {
+        const b = el('button', { type: 'button', role: 'tab', 'aria-selected': 'false', text: q.tab });
+        b.addEventListener('click', () => show(i));
+        nav.appendChild(b);
+        return b;
+      });
+      let current = -1;
+      function show(i) {
+        if (i === current) return;
+        current = i;
+        buttons.forEach((b, k) => b.setAttribute('aria-selected', String(k === i)));
+        track.textContent = '';
+        const main = card(data[i]);
+        if (motion) { main.classList.add('enter'); requestAnimationFrame(() => requestAnimationFrame(() => main.classList.remove('enter'))); }
+        track.appendChild(main);
+        const next = card(data[(i + 1) % data.length], true);
+        next.setAttribute('aria-hidden', 'true');
+        next.addEventListener('click', () => show((i + 1) % data.length));
+        track.appendChild(next);
+      }
+      show(0);
+    });
+  }
+
   function refresh(root) { arrows(root); reveal(root); }
 
   window.Lab = { db, configured, initTheme, allPosts, formatDate, el, renderBlocks, excerpt, safeUrl, refresh };
   document.addEventListener('DOMContentLoaded', () => {
     initTheme();
+    ink();
     masthead();
+    rail();
+    qtabs();
     if (motion) document.querySelectorAll('.hero h1, .lf-hero h1').forEach(words);
     refresh();
   });

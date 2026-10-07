@@ -220,29 +220,51 @@
     });
   })();
 
-  /* ---------- Fig. 7: il cacciatore nel terminale ---------- */
+  /* ---------- Fig. 7: prima e dopo, nel terminale ---------- */
   (function () {
-    const out = $('term-out'); if (!out) return;
-    let agente = LARGHEZZA >> 1, cibo = nuovoFood(agente, LARGHEZZA), punti = 0, passo = 0, last = 0;
-    function render() {
-      let riga = '';
-      for (let x = 0; x < LARGHEZZA; x++) riga += x === agente ? 'A' : (x === cibo ? '*' : '.');
-      out.textContent = '';
-      riga.split('').forEach((ch) => {
-        const s = document.createElement('span'); s.textContent = ch;
-        if (ch === 'A') s.className = 't-a'; else if (ch === '*') s.className = 't-f';
-        out.appendChild(s);
-      });
-      $('term-score').textContent = 'punti: ' + punti + '  passi: ' + passo;
-      $('term-w').textContent = 'pesi: [' + it(allenato.pesi[0], 2) + ', ' + it(allenato.pesi[1], 2) + ']  bias: ' + it(allenato.bias, 2);
+    if (!$('d0-out')) return;
+    // stesse posizioni del cibo per entrambi, così il confronto è onesto
+    let cibi = [], passo = 0, last = 0, paused = false;
+    const lati = [{ id: 'd0' }, { id: 'd1', cervello: allenato }];
+    function ciboN(k, agente) {
+      while (cibi.length <= k) cibi.push(Math.floor(Math.random() * LARGHEZZA));
+      return cibi[k] === agente ? (cibi[k] + 7) % LARGHEZZA : cibi[k];
     }
-    render();
+    function nuovaPartita() {
+      passo = 0; cibi = [];
+      lati[0].cervello = new Neurone(2);
+      lati.forEach((l) => { l.agente = LARGHEZZA >> 1; l.k = 0; l.punti = 0; l.cibo = ciboN(0, l.agente); });
+    }
+    function render() {
+      lati.forEach((l) => {
+        const out = $(l.id + '-out');
+        out.textContent = '';
+        for (let x = 0; x < LARGHEZZA; x++) {
+          const s = document.createElement('span');
+          s.textContent = x === l.agente ? 'A' : (x === l.cibo ? '*' : '.');
+          if (x === l.agente) s.className = 't-a'; else if (x === l.cibo) s.className = 't-f';
+          out.appendChild(s);
+        }
+        $(l.id + '-score').textContent = l.punti;
+        $(l.id + '-step').textContent = 'passo ' + passo + ' di 50';
+        $(l.id + '-w').textContent = 'pesi: [' + it(l.cervello.pesi[0], 2) + ', ' + it(l.cervello.pesi[1], 2) + ']  bias: ' + it(l.cervello.bias, 2);
+      });
+    }
+    nuovaPartita(); render();
+    const btn = $('duel-pause');
+    btn.addEventListener('click', () => {
+      paused = !paused;
+      btn.textContent = paused ? 'Riprendi' : 'Pausa';
+      btn.setAttribute('aria-pressed', String(paused));
+    });
     figure($('fig-terminale'), (t) => {
-      if (t - last < 0.45) return; last = t;
-      if (passo >= 50) { agente = LARGHEZZA >> 1; cibo = nuovoFood(agente, LARGHEZZA); punti = 0; passo = 0; render(); return; }
-      agente += allenato.pensa([agente / LARGHEZZA, cibo / LARGHEZZA]) > 0.5 ? 1 : -1;
-      agente = Math.max(0, Math.min(LARGHEZZA - 1, agente));
-      if (agente === cibo) { punti++; cibo = nuovoFood(agente, LARGHEZZA); }
+      if (paused || t - last < 0.45) return; last = t;
+      if (passo >= 50) { nuovaPartita(); render(); return; }
+      lati.forEach((l) => {
+        l.agente += l.cervello.pensa([l.agente / LARGHEZZA, l.cibo / LARGHEZZA]) > 0.5 ? 1 : -1;
+        l.agente = Math.max(0, Math.min(LARGHEZZA - 1, l.agente));
+        if (l.agente === l.cibo) { l.punti++; l.k++; l.cibo = ciboN(l.k, l.agente); }
+      });
       passo++; render();
     });
   })();

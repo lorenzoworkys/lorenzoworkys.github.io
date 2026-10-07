@@ -35,9 +35,26 @@
 
 <main class="longform">
 
-<section class="lf-hero">
+<section class="opening opening-hunter" aria-labelledby="op-title">
+  <div class="op-world" aria-hidden="true"></div>
+  <div class="op-stage">
+    <div class="op-text">
+      <p class="op-date">3 ottobre 2026 · Progetto 02</p>
+      <h1 id="op-title">Il cacciatore</h1>
+      <ol class="op-index" aria-label="Capitoli">
+        <li style="--i:0"><a href="#premessa"><span class="n">(1)</span><span class="lead"></span><span>Premessa e obiettivo</span></a></li>
+        <li style="--i:1"><a href="#sigmoide"><span class="n">(2)</span><span class="lead"></span><span>Pensare</span></a></li>
+        <li style="--i:2"><a href="#impara"><span class="n">(3)</span><span class="lead"></span><span>Imparare</span></a></li>
+        <li style="--i:3"><a href="#terminale"><span class="n">(4)</span><span class="lead"></span><span>Giocare, e rifarlo da solo</span></a></li>
+      </ol>
+    </div>
+  </div>
+  <button type="button" class="op-skip">Salta l’introduzione</button>
+  <span class="op-scroll" aria-hidden="true">Scorri ↓</span>
+</section>
+
+<section class="lf-hero lf-after">
   <div class="meta"><span class="tag">ML</span><span>Progetto 02</span><span>3 ottobre 2026</span><span>12 minuti di lettura</span></div>
-  <h1>Il cacciatore</h1>
   <p class="dek">Un solo neurone, due ingressi, venti caselle. Come ho costruito NeuralNet4, come l’ho riscritto da solo e cosa ho capito, riga per riga.</p>
   <div class="status-cards">
     <div class="status-card done"><span class="sc-label">Parte 1 · impara dagli esempi</span><span class="sc-value">Completata</span></div>
@@ -338,14 +355,40 @@
 </section>
 
 <figure class="figure lf-wide" id="fig-terminale">
-  <div class="term fig-tile">
+  <div class="tile tile-oat fig-tile duel">
     <span class="fig-badge" aria-hidden="true">7</span>
-    <div class="term-line muted">&gt; python neuralnet4_corretto.py</div>
-    <div class="term-line" id="term-w"></div>
-    <div class="term-line term-world" id="term-out" aria-label="Il mondo nel terminale"></div>
-    <div class="term-line" id="term-score"></div>
+    <div class="duel-head">
+      <span><span class="muted">Compito:</span> raggiungere il cibo, in partite da 50 passi</span>
+      <button type="button" class="duel-pause" id="duel-pause" aria-pressed="false">Pausa</button>
+    </div>
+    <div class="duel-grid">
+      <div class="duel-side">
+        <div class="duel-label">Prima · un neurone appena nato</div>
+        <div class="term">
+          <div class="term-bar"><span>pesi a caso</span><span>punti <b id="d0-score">0</b></span></div>
+          <div class="term-body">
+            <div class="term-line muted">&gt; python neuralnet4_corretto.py</div>
+            <div class="term-line" id="d0-w"></div>
+            <div class="term-line term-world" id="d0-out" aria-label="Il mondo del neurone non allenato"></div>
+            <div class="term-line muted" id="d0-step"></div>
+          </div>
+        </div>
+      </div>
+      <div class="duel-side now">
+        <div class="duel-label">Dopo · 200 epoche di allenamento</div>
+        <div class="term">
+          <div class="term-bar"><span>allenato in questa pagina</span><span>punti <b id="d1-score">0</b></span></div>
+          <div class="term-body">
+            <div class="term-line muted">&gt; python neuralnet4_corretto.py</div>
+            <div class="term-line" id="d1-w"></div>
+            <div class="term-line term-world" id="d1-out" aria-label="Il mondo del neurone allenato"></div>
+            <div class="term-line muted" id="d1-step"></div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-  <figcaption class="caption"><b>Fig. 7</b> — Il gioco come appare nel terminale, guidato da un neurone allenato poco fa in questa pagina. Una partita dura 50 passi, poi ricomincia. I pesi in alto sono quelli veri del cervello che sta giocando.</figcaption>
+  <figcaption class="caption"><b>Fig. 7</b> — Il gioco come appare nel terminale, due volte. A sinistra un neurone con pesi a caso, mai allenato: a ogni partita ne nasce uno nuovo, e ogni tanto per fortuna va dalla parte giusta. A destra un neurone allenato poco fa in questa pagina. Stesso mondo, stesse posizioni del cibo, 50 passi per partita. I pesi in alto sono quelli veri dei due cervelli che stanno giocando.</figcaption>
 </figure>
 
 <section id="dasolo" class="prose">
@@ -415,6 +458,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/js/config.js"></script>
 <script src="assets/js/common.js"></script>
+<script src="assets/js/opening.js"></script>
 <script src="assets/js/neuralnet4.js"></script>
 </body>
 </html>
