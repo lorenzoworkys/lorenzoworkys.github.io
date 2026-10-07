@@ -544,13 +544,23 @@ body { overflow-x: clip; }
 .ink .hero h1, .ink .lf-hero h1, .ink .section-head h2, .ink .h2, .ink .article h1, .ink .prose h2, .ink .cta-text h3, .ink .opening h1 { filter: url(#lore-ink); }
 
 /* ---------- Apertura da "lancio" ---------- */
-.longform > .opening { width: 100vw; max-width: none; }
 .opening {
-  --mast-h: 100px;
+  --mast-h: 100px; --op-bg: #141413; --x: 0;
   position: relative; margin-top: calc(-1 * var(--mast-h)); height: max(640px, 100svh);
-  background: #141413; color: #F0EEE6; overflow: hidden; isolation: isolate;
+  width: 100vw; max-width: none; align-self: center;
+  background: var(--op-bg); color: #F0EEE6; overflow: clip; isolation: isolate;
 }
-.opening::after { /* grana su tutta la scena */
+/* La scena resta ferma sullo schermo mentre si scorre: per uscirne serve un bel tratto di pagina */
+.opening.wrapped { background: none; }
+.opening.pinned { height: calc(var(--op-len, 260) * 1svh); }
+.op-sticky {
+  position: sticky; top: 0; height: max(640px, 100svh); overflow: clip; background: var(--op-bg);
+  /* il fondo della scena sfuma nella pagina: nessun taglio netto tra apertura e testo */
+  -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 22vh), rgba(0, 0, 0, .7) calc(100% - 9vh), transparent);
+  mask-image: linear-gradient(180deg, #000 calc(100% - 22vh), rgba(0, 0, 0, .7) calc(100% - 9vh), transparent);
+}
+.op-text { transform: translateY(calc(var(--x) * -9vh)); opacity: calc(1 - var(--x) * .35); }
+.op-sticky::after { /* grana su tutta la scena */
   content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 5; opacity: .45; mix-blend-mode: overlay;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .5 0'/></filter><rect width='200' height='200' filter='url(%23g)'/></svg>");
 }
@@ -565,7 +575,7 @@ body { overflow-x: clip; }
 .op-index .n { font-family: var(--sans); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .op-index .lead { border-bottom: 1px dotted rgba(240, 238, 230, .35); transform: translateY(-4px); }
 .op-skip, .op-scroll {
-  position: absolute; z-index: 6; bottom: 22px; left: 50%; transform: translateX(-50%);
+  position: absolute; z-index: 6; bottom: 8vh; left: 50%; transform: translateX(-50%);
   font-family: var(--sans); font-size: 13px; color: rgba(240, 238, 230, .6); background: none; border: 0; cursor: pointer; min-height: 44px; padding: 0 12px;
   transition: opacity .6s ease, color var(--quick) ease;
 }
@@ -583,7 +593,8 @@ body { overflow-x: clip; }
 .motion .opening.titled .op-index li { opacity: 1; transform: none; transition-delay: calc(1.2s + var(--i) * .12s); }
 
 /* Il cacciatore: il mondo di venti caselle come scena */
-.opening-hunter { background: radial-gradient(120% 70% at 50% 118%, rgba(217, 119, 87, .34), transparent 62%), #141413; }
+.opening-hunter { --op-bg: radial-gradient(120% 60% at 50% 88%, rgba(217, 119, 87, .3), transparent 62%), #141413; }
+.opening-hunter.pinned.titled .op-world { margin-top: calc(var(--x) * -8vh); opacity: calc(.5 - var(--x) * .3); }
 .op-world { position: absolute; z-index: 2; left: 50%; top: 50%; width: min(880px, 88vw); display: grid; grid-template-columns: repeat(20, minmax(0, 1fr)); gap: clamp(3px, .6vw, 8px);
   transform: translate(-50%, -50%); transition: transform 1.8s var(--ease-out), opacity 1.8s var(--ease-out); }
 .op-world i { display: block; aspect-ratio: 1 / 1.35; border-radius: clamp(3px, .5vw, 7px); background: rgba(240, 238, 230, .1); transition: background-color .25s ease, box-shadow .25s ease; }
@@ -594,7 +605,12 @@ body { overflow-x: clip; }
 .opening.titled .op-world { transform: translate(-50%, calc(-50% - min(31vh, 270px))) scale(.6); opacity: .5; }
 
 /* Visione: collage di carta strappata attorno a un orizzonte */
-.opening-vision { --w: 60; background: #1A1918; }
+.opening-vision { --w-base: 60; --w: 60; --op-bg: #1A1918; --op-len: 270; }
+.opening-hunter { --op-len: 270; }
+.opening-home { --op-len: 240; }
+.opening h1 .dot { color: var(--clay); }
+.opening.opening-home h1 { max-width: 24ch; font-size: clamp(40px, 4.4vw, 70px); line-height: 1.06; text-wrap: balance; }
+.opening-home .op-text { gap: 18px; }
 .opening-vision h1 { font-size: clamp(52px, 7.2vw, 110px); }
 .op-panel {
   position: absolute; z-index: 1; top: 0; bottom: 0; left: 50%; width: calc(var(--w) * 1vw); transform: translateX(-50%);
@@ -618,7 +634,7 @@ body { overflow-x: clip; }
 @media (max-width: 640px) {
   .op-index a { font-size: 15px; }
   .opening.titled .op-world { transform: translate(-50%, calc(-50% - 33vh)) scale(.85); }
-  .opening-vision { --w: 72; }
+  .opening-vision { --w-base: 72; --w: 72; }
 }
 
 /* La testata sopra la scena scura */
@@ -681,3 +697,7 @@ body { overflow-x: clip; }
 
 .lf-after { padding-top: 8px; }
 .opening-vision .op-index { width: min(440px, calc(var(--w) * 1vw - 40px)); }
+.opening + .quote-side { margin-top: 8px; }
+.opening-home .op-index { gap: 4px; margin-top: 6px; }
+.opening-home .op-index a { font-size: 15px; }
+@media (max-height: 820px) { .opening-home .op-dek { display: none; } }
