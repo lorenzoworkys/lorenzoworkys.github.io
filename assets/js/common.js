@@ -16,8 +16,14 @@
   }
   function initTheme() {
     setTheme(document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     document.querySelectorAll('.theme-toggle').forEach((b) =>
-      b.addEventListener('click', () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark')));
+      b.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        // dissolvenza dell'intera pagina, dove il browser la supporta; altrimenti cambio netto
+        if (document.startViewTransition && !reduce) document.startViewTransition(() => setTheme(next));
+        else setTheme(next);
+      }));
   }
 
   /* ---------- Note ---------- */

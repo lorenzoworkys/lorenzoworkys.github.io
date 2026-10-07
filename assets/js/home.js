@@ -170,15 +170,26 @@
     g1.disp = f(g1.x); drawGD(); drawF2(0);
     return;
   }
-  let acc = 0, worldAcc = 0, prev = performance.now(), start = prev;
+  // Si anima solo ciò che è sullo schermo; se non si vede nessuna figura, l'orologio si ferma.
+  const vis = { gd: true, f2: true, f3: true, world: true };
+  const watched = { gd: $('f1-curve'), f2: $('f2-group'), f3: $('f3-ring'), world: world };
+  let acc = 0, worldAcc = 0, prev = performance.now(), start = prev, running = false;
   function frame(now) {
     const dt = Math.min(0.1, (now - prev) / 1000); prev = now;
-    acc += dt; worldAcc += dt;
-    while (acc >= 0.05) { stepGD(); acc -= 0.05; }
-    if (worldAcc >= 0.6) { stepWorld(); worldAcc = 0; }
     const t = (now - start) / 1000;
-    drawGD(); drawF2(t); drawF3(t);
-    requestAnimationFrame(frame);
+    if (vis.gd) { acc += dt; while (acc >= 0.05) { stepGD(); acc -= 0.05; } drawGD(); }
+    if (vis.world) { worldAcc += dt; if (worldAcc >= 0.6) { stepWorld(); worldAcc = 0; } }
+    if (vis.f2) drawF2(t);
+    if (vis.f3) drawF3(t);
+    if (vis.gd || vis.f2 || vis.f3 || vis.world) requestAnimationFrame(frame); else running = false;
   }
-  requestAnimationFrame(frame);
+  function wake() { if (!running) { running = true; prev = performance.now(); requestAnimationFrame(frame); } }
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((es) => {
+      es.forEach((e) => { for (const k in watched) if (watched[k].closest('.tile') === e.target) vis[k] = e.isIntersecting; });
+      wake();
+    }, { rootMargin: '120px' });
+    for (const k in watched) io.observe(watched[k].closest('.tile'));
+  }
+  wake();
 })();
